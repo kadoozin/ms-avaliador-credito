@@ -2,13 +2,12 @@ package com.kadoozin.msavaliadorcredito.service;
 
 import com.kadoozin.msavaliadorcredito.clients.CartoesResourceClient;
 import com.kadoozin.msavaliadorcredito.clients.ClientResourceClient;
+import com.kadoozin.msavaliadorcredito.clients.response.CartaoCliente;
 import com.kadoozin.msavaliadorcredito.clients.response.ClienteResponse;
-import com.kadoozin.msavaliadorcredito.database.model.CartaoCliente;
-import com.kadoozin.msavaliadorcredito.database.model.DadosCliente;
-import com.kadoozin.msavaliadorcredito.database.model.SituacaoCliente;
 import com.kadoozin.msavaliadorcredito.dto.request.DadosAvaliacaoRequest;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoAprovadoResponse;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoElegivelResponse;
+import com.kadoozin.msavaliadorcredito.dto.response.SituacaoCliente;
 import com.kadoozin.msavaliadorcredito.exceptions.DadosClienteNotFoundException;
 import com.kadoozin.msavaliadorcredito.exceptions.ErroComunicacaoMicroserviceException;
 import feign.FeignException;
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AvalaiadorCreditoService {
+public class AvaliadorCreditoService {
 
     private final ClientResourceClient clientResourceClient;
     private final CartoesResourceClient cartoesResourceClient;
@@ -121,19 +120,10 @@ public class AvalaiadorCreditoService {
     }
 
     private SituacaoCliente montarSituacaoCliente(ClienteResponse clienteResponse, List<CartaoCliente> cartoes) {
-        SituacaoCliente situacaoCliente = new SituacaoCliente();
-        situacaoCliente.setCliente(mapearDadosCliente(clienteResponse));
-        situacaoCliente.setCartoes(cartoes == null ? List.of() : cartoes);
-        return situacaoCliente;
-    }
-
-    private DadosCliente mapearDadosCliente(ClienteResponse clienteResponse) {
-        DadosCliente dadosCliente = new DadosCliente();
-        if (clienteResponse.clienteId() != null) {
-            dadosCliente.setId(clienteResponse.clienteId().longValue());
-        }
-        dadosCliente.setNome(clienteResponse.nome());
-        return dadosCliente;
+        Long clienteId = clienteResponse.clienteId() != null
+                ? clienteResponse.clienteId().longValue()
+                : null;
+        return new SituacaoCliente(clienteId, clienteResponse.nome(), cartoes == null ? List.of() : cartoes);
     }
 
     private Integer obterIdadeObrigatoria(ClienteResponse clienteResponse) {

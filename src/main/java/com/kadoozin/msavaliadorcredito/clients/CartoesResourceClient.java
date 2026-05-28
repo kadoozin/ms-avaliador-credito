@@ -1,6 +1,6 @@
 package com.kadoozin.msavaliadorcredito.clients;
 
-import com.kadoozin.msavaliadorcredito.database.model.CartaoCliente;
+import com.kadoozin.msavaliadorcredito.clients.response.CartaoCliente;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoElegivelResponse;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.cloud.openfeign.FeignClient;

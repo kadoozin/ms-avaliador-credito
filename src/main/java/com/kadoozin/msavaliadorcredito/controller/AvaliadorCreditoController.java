@@ -1,9 +1,9 @@
 package com.kadoozin.msavaliadorcredito.controller;
 
-import com.kadoozin.msavaliadorcredito.database.model.SituacaoCliente;
 import com.kadoozin.msavaliadorcredito.dto.request.DadosAvaliacaoRequest;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoAprovadoResponse;
-import com.kadoozin.msavaliadorcredito.service.AvalaiadorCreditoService;
+import com.kadoozin.msavaliadorcredito.dto.response.SituacaoCliente;
+import com.kadoozin.msavaliadorcredito.service.AvaliadorCreditoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AvaliadorCreditoController {
 
-    private final AvalaiadorCreditoService avaliadorCreditoService;
+    private final AvaliadorCreditoService avaliadorCreditoService;
 
     @GetMapping(value = "/situacao-cliente", params = "cpf")
     public ResponseEntity<SituacaoCliente> consultaSituacaoCliente (@RequestParam("cpf") String cpf){
