@@ -16,6 +16,9 @@ public interface CartoesResourceClient {
     @GetMapping("/elegiveis")
     ResponseEntity<List<CartaoElegivelResponse>> getCartoesElegiveisByRenda(@RequestParam("renda") Long renda);
 
+    @GetMapping
+    ResponseEntity<List<CartaoElegivelResponse>> getAllCartoes();
+
     @GetMapping("/cliente")
     ResponseEntity<List<CartaoCliente>> getCartoesByCpf(@RequestParam("cpf") @CPF String cpf);
 }
