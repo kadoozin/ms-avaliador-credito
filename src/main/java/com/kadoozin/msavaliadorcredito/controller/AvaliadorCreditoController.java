@@ -31,7 +31,7 @@ public class AvaliadorCreditoController {
 
     @PostMapping
     public ResponseEntity<List<CartaoAprovadoResponse>> realizarAvaliacaoCliente(@Valid @RequestBody DadosAvaliacaoRequest request) {
-        List<CartaoAprovadoResponse> cartoesAprovados = avaliadorCreditoService.realizarAvaliacaoCliente(request);
+        List<CartaoAprovadoResponse> cartoesAprovados = avaliadorCreditoService.realizarAvaliacaoCliente(request.cpf());
         return ResponseEntity.ok(cartoesAprovados);
     }
 }

@@ -4,7 +4,6 @@ import com.kadoozin.msavaliadorcredito.clients.CartoesResourceClient;
 import com.kadoozin.msavaliadorcredito.clients.ClientResourceClient;
 import com.kadoozin.msavaliadorcredito.clients.response.CartaoCliente;
 import com.kadoozin.msavaliadorcredito.clients.response.ClienteResponse;
-import com.kadoozin.msavaliadorcredito.dto.request.DadosAvaliacaoRequest;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoAprovadoResponse;
 import com.kadoozin.msavaliadorcredito.dto.response.CartaoElegivelResponse;
 import com.kadoozin.msavaliadorcredito.dto.response.SituacaoCliente;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -32,13 +30,12 @@ public class AvaliadorCreditoService {
         return montarSituacaoCliente(clienteResponse, cartoes);
     }
 
-    public List<CartaoAprovadoResponse> realizarAvaliacaoCliente(DadosAvaliacaoRequest request) {
-        ClienteResponse clienteResponse = buscarDadosCliente(request.cpf());
-        List<CartaoElegivelResponse> cartoesElegiveis = buscarCartoesElegiveis(request.renda());
-        Integer idadeCliente = obterIdadeObrigatoria(clienteResponse);
+    public List<CartaoAprovadoResponse> realizarAvaliacaoCliente(String cpf) {
+        buscarDadosCliente(cpf);
+        List<CartaoElegivelResponse> cartoesElegiveis = buscarTodosCartoes();
 
         return cartoesElegiveis.stream()
-                .map(cartaoElegivel -> montarCartaoAprovado(idadeCliente, cartaoElegivel))
+                .map(this::montarCartaoAprovado)
                 .toList();
     }
 
@@ -77,10 +74,10 @@ public class AvaliadorCreditoService {
         }
     }
 
-    private List<CartaoElegivelResponse> buscarCartoesElegiveis(Long renda) {
+    private List<CartaoElegivelResponse> buscarTodosCartoes() {
         try {
             ResponseEntity<List<CartaoElegivelResponse>> response =
-                    cartoesResourceClient.getCartoesElegiveisByRenda(renda);
+                    cartoesResourceClient.getAllCartoes();
             if (response == null || response.getBody() == null) {
                 return List.of();
             }
@@ -89,7 +86,7 @@ public class AvaliadorCreditoService {
             return List.of();
         } catch (FeignException ex) {
             throw new ErroComunicacaoMicroserviceException(
-                    "Erro ao consultar cartoes elegiveis no ms-cartoes.",
+                    "Erro ao consultar cartoes no ms-cartoes.",
                     ex.status(),
                     ex
             );
@@ -126,34 +123,18 @@ public class AvaliadorCreditoService {
         return new SituacaoCliente(clienteId, clienteResponse.nome(), cartoes == null ? List.of() : cartoes);
     }
 
-    private Integer obterIdadeObrigatoria(ClienteResponse clienteResponse) {
-        Integer idadeCliente = clienteResponse.idade();
-        if (idadeCliente == null || idadeCliente <= 0) {
-            throw new ErroComunicacaoMicroserviceException(
-                    "Erro ao consultar dados do cliente no ms-clientes: idade invalida para avaliacao.",
-                    502
-            );
-        }
-        return idadeCliente;
-    }
-
-    private CartaoAprovadoResponse montarCartaoAprovado(Integer idadeCliente, CartaoElegivelResponse cartaoElegivel) {
+    private CartaoAprovadoResponse montarCartaoAprovado(CartaoElegivelResponse cartaoElegivel) {
         if (cartaoElegivel.limiteBasico() == null) {
             throw new ErroComunicacaoMicroserviceException(
-                    "Erro ao consultar cartoes elegiveis no ms-cartoes: limiteBasico ausente.",
+                    "Erro ao consultar cartoes no ms-cartoes: limiteBasico ausente.",
                     502
             );
         }
-
-        BigDecimal fatorIdade = BigDecimal.valueOf(idadeCliente)
-                .divide(BigDecimal.TEN);
-        BigDecimal limiteAprovado = cartaoElegivel.limiteBasico()
-                .multiply(fatorIdade);
 
         return new CartaoAprovadoResponse(
                 cartaoElegivel.nome(),
                 cartaoElegivel.bandeiraCartao(),
-                limiteAprovado
+                cartaoElegivel.limiteBasico()
         );
     }
 }
