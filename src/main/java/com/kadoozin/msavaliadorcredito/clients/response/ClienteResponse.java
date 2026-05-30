@@ -4,6 +4,7 @@ public record ClienteResponse(
         Integer clienteId,
         String cpf,
         String nome,
-        Integer idade
+        Integer idade,
+        String endereco
 ) {
 }
